@@ -35,7 +35,6 @@ const userSchema = new Schema<UserType>(
             type: String,
             minLength: 7,
             required: true,
-            match: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{7,}$/,
         },
         role: {
             type: String,

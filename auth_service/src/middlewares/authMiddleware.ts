@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { ServerConfig } from "../config/index";
 
 interface CustomRequest extends Request {
     user?: any;
@@ -21,7 +22,10 @@ export const authenticateJWT = (
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+        const decoded = jwt.verify(
+            token,
+            ServerConfig.JWT_SECRET_KEY as string
+        );
         req.user = decoded;
         next();
     } catch (ex) {

@@ -1,6 +1,7 @@
 import User from "../models/user";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { ServerConfig } from "../config";
 
 // Define the type for the context argument
 interface Context {
@@ -59,7 +60,7 @@ const resolvers = {
             }
             const token = jwt.sign(
                 { id: user.id, role: user.role },
-                process.env.JWT_SECRET as string,
+                ServerConfig.JWT_SECRET_KEY as string,
                 { expiresIn: "1h" }
             );
             return token;

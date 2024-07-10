@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/user";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { ServerConfig } from "../config";
 
 /**
  * Controller to handle user registration.
@@ -33,7 +34,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         const token = jwt.sign(
             { id: user.id, role: user.role },
-            process.env.JWT_SECRET as string,
+            ServerConfig.JWT_SECRET_KEY as string,
             { expiresIn: "1h" }
         );
         res.status(200).json({ token });
