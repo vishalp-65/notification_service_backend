@@ -1,11 +1,7 @@
 import WebSocket from "ws";
 import http from "http";
 import { ServerConfig } from "../config";
-import {
-    connectConsumer,
-    subscribeToTopic,
-    runConsumer,
-} from "../config/kafka";
+import { connectConsumer, initKafkaConsumer } from "../config/kafka";
 import jwt from "jsonwebtoken";
 
 const server = http.createServer();
@@ -23,8 +19,10 @@ wss.on("connection", (ws: CustomWebSocket) => {
             const { token } = JSON.parse(message);
             const decoded = jwt.verify(
                 token,
-                process.env.JWT_SECRET as string
-            ) as { id: string };
+                ServerConfig.JWT_SECRET_KEY as string
+            ) as {
+                id: string;
+            };
             ws.userId = decoded.id;
             console.log(`User connected: ${ws.userId}`);
         } catch (error) {
@@ -55,8 +53,7 @@ const startWebSocketServer = async () => {
     });
 
     await connectConsumer();
-    await subscribeToTopic("notifications");
-    runConsumer(broadcastNotification);
+    await initKafkaConsumer(broadcastNotification);
 };
 
 export { startWebSocketServer };
