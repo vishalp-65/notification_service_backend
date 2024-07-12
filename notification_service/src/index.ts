@@ -2,7 +2,6 @@ import express, { json, urlencoded } from "express";
 import { DatabaseConfig, ServerConfig } from "./config";
 import notificationRoutes from "./routes/notificationRoutes";
 import { ApolloServer } from "apollo-server-express";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import typeDefs from "./schema/notificationSchema";
 import resolvers from "./resolvers/notificationResolver";
 import jwt from "jsonwebtoken";
