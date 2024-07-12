@@ -1,28 +1,38 @@
-import { Kafka, Consumer } from "kafkajs";
+import fs from "fs";
+import path from "path";
+import { Kafka } from "kafkajs";
+import { ServerConfig } from "./index";
 
-const kafka = new Kafka({
-    clientId: "notification-service",
-    brokers: [process.env.KAFKA_BROKER as string],
-});
+let kafka;
 
-const consumer: Consumer = kafka.consumer({ groupId: "notification-group" });
-
-const connectConsumer = async () => {
-    await consumer.connect();
-    console.log("Connected to Kafka");
-};
-
-const subscribeToTopic = async (topic: string) => {
-    await consumer.subscribe({ topic, fromBeginning: true });
-};
-
-const runConsumer = async (callback: (message: any) => void) => {
-    await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            const parsedMessage = JSON.parse(message.value?.toString() || "{}");
-            callback(parsedMessage);
+try {
+    kafka = new Kafka({
+        clientId: "notification-service",
+        brokers: [ServerConfig.KAFKA_BROKERS as string],
+        ssl: {
+            ca: [fs.readFileSync(path.join(__dirname, "kafka.pem"), "utf-8")],
+        },
+        sasl: {
+            username: "avnadmin",
+            password: ServerConfig.KAFKA_PASSWORD as string,
+            mechanism: "plain",
+        },
+        connectionTimeout: 100000,
+        requestTimeout: 25000,
+        retry: {
+            initialRetryTime: 100,
+            retries: 10,
         },
     });
-};
+} catch (error) {
+    console.log("Kafka connection failed");
+}
 
-export { connectConsumer, subscribeToTopic, runConsumer };
+if (!kafka) {
+    console.log("connection failed with kafka");
+    return;
+}
+
+const producer = kafka?.consumer({groupId:});
+
+export default producer;

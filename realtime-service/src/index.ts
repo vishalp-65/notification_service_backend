@@ -1,25 +1,20 @@
 import express from "express";
-import { Server } from "socket.io";
-import http from "http";
-import consumer from "./config/kafka";
-import { authenticateJWT } from "./middlewares/authMiddleware";
+import { json, urlencoded } from "express";
+import { ServerConfig, DatabaseConfig } from "./config/index";
+import { startWebSocketServer } from "./controllers/realtimeController";
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+app.use(json());
+app.use(urlencoded({ extended: true }));
 
-io.use(authenticateJWT);
+const startServer = async () => {
+    // Connect to MongoDB
+    await DatabaseConfig.connectDB();
 
-io.on("connection", (socket) => {
-    console.log("New client connected");
-
-    consumer.on("message", (message) => {
-        socket.emit("notification", message);
+    app.listen(ServerConfig.PORT, () => {
+        console.log(`Server running on port ${ServerConfig.PORT}`);
+        startWebSocketServer();
     });
+};
 
-    socket.on("disconnect", () => {
-        console.log("Client disconnected");
-    });
-});
-
-export default server;
+startServer();
