@@ -61,7 +61,7 @@ const resolvers = {
             const token = jwt.sign(
                 { id: user.id, role: user.role },
                 ServerConfig.JWT_SECRET_KEY as string,
-                { expiresIn: "1h" }
+                { expiresIn: "7d" }
             );
             return token;
         },

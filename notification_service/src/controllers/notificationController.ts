@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Notification from "../models/notification";
-import producer from "../config/kafkaConfig";
+import { sendMessage } from "../config/kafkaConfig";
+// import producer from "../config/kafkaConfig";
 
 interface CustomRequest extends Request {
     user?: any;
@@ -18,10 +19,7 @@ export const createNotification = async (
         await notification.save();
 
         // Add kafka producer
-        await producer.send({
-            topic: "notification",
-            messages: [{ value: JSON.stringify(notification) }],
-        });
+        await sendMessage("notification", notification);
 
         res.status(201).json(notification);
     } catch (err) {

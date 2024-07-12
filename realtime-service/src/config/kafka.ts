@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { Consumer, Kafka } from "kafkajs";
+import { Consumer, Kafka, EachBatchPayload } from "kafkajs";
 import { ServerConfig } from "./index";
 
-let consumer: Consumer | undefined;
-let kafka: Kafka | undefined;
+let consumer: Consumer;
+let kafka: Kafka;
 
 async function connectConsumer() {
     try {
@@ -13,7 +13,10 @@ async function connectConsumer() {
             brokers: [ServerConfig.KAFKA_BROKERS as string],
             ssl: {
                 ca: [
-                    fs.readFileSync(path.join(__dirname, "kafka.pem"), "utf-8"),
+                    fs.readFileSync(
+                        path.join(__dirname, "../../kafka.pem"),
+                        "utf-8"
+                    ),
                 ],
             },
             sasl: {
@@ -28,37 +31,54 @@ async function connectConsumer() {
                 retries: 10,
             },
         });
+        console.log("Kafka connected");
     } catch (error) {
-        console.log("Kafka connection failed");
+        console.error("Kafka connection failed", error);
     }
 }
-consumer = kafka?.consumer({ groupId: "notification-service" });
 
 async function initKafkaConsumer(
     broadcastNotification: (message: any) => void
 ) {
+    if (!kafka) {
+        await connectConsumer();
+    }
+
     try {
-        await consumer?.connect();
-        await consumer?.subscribe({
-            topics: ["notification"],
+        consumer = kafka.consumer({ groupId: "notification-service" });
+        await consumer.connect();
+        console.log("Kafka consumer connected");
+
+        await consumer.subscribe({
+            topic: "notification",
             fromBeginning: true,
         });
-        await consumer?.run({
+        console.log("Kafka consumer subscribed to topic");
+
+        await consumer.run({
             autoCommit: false,
-            eachBatch: async function ({
+            eachBatch: async ({
                 batch,
                 heartbeat,
                 commitOffsetsIfNecessary,
                 resolveOffset,
-            }) {
-                const messages = batch.messages;
-                console.log(`Recevied ${messages.length} messages..`);
-                for (const message of messages) {
-                    if (!message.value) continue;
-                    const stringMessage = message.value.toString();
-                    const parsedMessage = JSON.stringify(stringMessage);
+            }: EachBatchPayload) => {
+                console.log(
+                    `Received batch of ${batch.messages.length} messages...`
+                );
 
-                    broadcastNotification(parsedMessage);
+                for (const message of batch.messages) {
+                    if (!message.value) continue;
+
+                    const stringMessage = message.value.toString();
+                    console.log(`Processing message: ${stringMessage}`);
+
+                    try {
+                        const parsedMessage = JSON.parse(stringMessage);
+                        broadcastNotification(parsedMessage);
+                    } catch (error) {
+                        console.error("Error parsing message", error);
+                    }
 
                     resolveOffset(message.offset);
                     await commitOffsetsIfNecessary({
@@ -81,7 +101,7 @@ async function initKafkaConsumer(
             },
         });
     } catch (error) {
-        console.log(error, "error occured with kafka connection");
+        console.error("Error occurred with Kafka consumer", error);
     }
 }
 

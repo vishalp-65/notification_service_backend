@@ -1,5 +1,6 @@
-import Notification from "../models/notification";
 import { ApolloError } from "apollo-server-express";
+import Notification from "../models/notification";
+import { sendMessage } from "../config/kafkaConfig";
 
 const resolvers = {
     Query: {
@@ -62,14 +63,15 @@ const resolvers = {
                 if (!user) {
                     throw new ApolloError("Unauthorized", "UNAUTHORIZED");
                 }
-
                 const notification = new Notification({
                     userId: user.id,
                     message,
                 });
+
                 await notification.save();
 
-                // TODO: Add Kafka producer logic here
+                // Add kafka producer
+                await sendMessage("notification", notification);
 
                 return notification;
             } catch (error) {

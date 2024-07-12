@@ -1,7 +1,6 @@
 import WebSocket from "ws";
 import http from "http";
 import { ServerConfig } from "../config";
-import { connectConsumer, initKafkaConsumer } from "../config/kafka";
 import jwt from "jsonwebtoken";
 
 const server = http.createServer();
@@ -16,7 +15,9 @@ wss.on("connection", (ws: CustomWebSocket) => {
 
     ws.on("message", (message: string) => {
         try {
+            console.log(message);
             const { token } = JSON.parse(message);
+            console.log(token);
             const decoded = jwt.verify(
                 token,
                 ServerConfig.JWT_SECRET_KEY as string
@@ -51,9 +52,6 @@ const startWebSocketServer = async () => {
     server.listen(ServerConfig.WS_PORT, () => {
         console.log(`WebSocket server started on port ${ServerConfig.WS_PORT}`);
     });
-
-    await connectConsumer();
-    await initKafkaConsumer(broadcastNotification);
 };
 
-export { startWebSocketServer };
+export { startWebSocketServer, broadcastNotification };

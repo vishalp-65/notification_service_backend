@@ -10,9 +10,9 @@ import { authenticateJWT } from "../middlewares/authMiddleware";
 const router = Router();
 
 // REST API routes
-router.post("/api/notifications", authenticateJWT, createNotification);
-router.get("/api/notifications", authenticateJWT, getNotifications);
-router.get("/api/notifications/:id", authenticateJWT, getNotificationById);
-router.put("/api/notifications/:id", authenticateJWT, markNotificationAsRead);
+router.post("/notification", authenticateJWT, createNotification);
+router.get("/notifications", authenticateJWT, getNotifications);
+router.get("/notifications/:id", authenticateJWT, getNotificationById);
+router.put("/notifications/:id", authenticateJWT, markNotificationAsRead);
 
 export default router;
