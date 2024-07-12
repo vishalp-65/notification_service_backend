@@ -13,6 +13,6 @@ const router = Router();
 router.post("/notification", authenticateJWT, createNotification);
 router.get("/notifications", authenticateJWT, getNotifications);
 router.get("/notifications/:id", authenticateJWT, getNotificationById);
-router.put("/notifications/:id", authenticateJWT, markNotificationAsRead);
+router.put("/notification/:id", authenticateJWT, markNotificationAsRead);
 
 export default router;

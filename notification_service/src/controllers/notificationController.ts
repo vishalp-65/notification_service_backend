@@ -79,10 +79,11 @@ export const markNotificationAsRead = async (
     res: Response
 ): Promise<void> => {
     const { id } = req.params;
+    console.log("id", id);
 
     try {
-        const notification = await Notification.findByIdAndUpdate(
-            id,
+        const notification = await Notification.findOneAndUpdate(
+            { id: id },
             { read: true },
             { new: true }
         );
