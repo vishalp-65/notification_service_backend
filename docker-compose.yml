@@ -8,9 +8,8 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - DB_URI=
-      - PORT=8082
-      - JWT_SECRET_KEY=
+      - DB_URI=${DB_URI}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
 
   notification-service:
     build:
@@ -18,18 +17,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9000:9000"
-    depends_on:
-      - auth-service
     environment:
-      - DB_URI=
-      - PORT=9000
-      - JWT_SECRET_KEY=
-      - KAFKA_CLIENT_ID=
-      - KAFKA_BROKERS=
-      - KAFKA_USERNAME=
-      - KAFKA_PASSWORD=
-      - KAFKA_GROUP_ID=
-      - KAFKA_TOPICS=
+      - DB_URI=${DB_URI}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - KAFKA_CLIENT_ID=${KAFKA_CLIENT_ID}
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - KAFKA_USERNAME=${KAFKA_USERNAME}
+      - KAFKA_PASSWORD=${KAFKA_PASSWORD}
+      - KAFKA_GROUP_ID=notification-group
+      - KAFKA_TOPICS=${KAFKA_TOPICS}
 
   realtime-service:
     build:
@@ -38,14 +34,11 @@ services:
     ports:
       - "9001:9001"
       - "8000:8000"
-    depends_on:
-      - notification-service
     environment:
-      - DB_URI=
-      - PORT=9001
-      - JWT_SECRET_KEY=
+      - DB_URI=${DB_URI}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - WS_PORT=8000
-      - KAFKA_CLIENT_ID=
-      - KAFKA_BROKERS=
-      - KAFKA_USERNAME=
-      - KAFKA_PASSWORD=
+      - KAFKA_CLIENT_ID=${KAFKA_CLIENT_ID}
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - KAFKA_USERNAME=${KAFKA_USERNAME}
+      - KAFKA_PASSWORD=${KAFKA_PASSWORD}
